@@ -47,6 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_files'])) {
   header("Location: received_files.php");
   exit;
 }
+
+// (4) 使用者進入「收到的檔案」頁面時，將尚未讀取的檔案標記為已讀
+$stmtMarkRead = $pdo->prepare("UPDATE shared_files SET is_read = 1 WHERE recipient_id = ? AND is_read = 0");
+$stmtMarkRead->execute([$_SESSION['user_id']]);
+
 // (4) 撈取目前使用者收到的檔案
 $stmt = $pdo->prepare("
     SELECT sf.*, u.username AS sender_name
