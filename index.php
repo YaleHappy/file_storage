@@ -1610,13 +1610,21 @@ function checkNewFiles() {
   fetch('check_new_files.php')
     .then(r => r.json())
     .then(data => {
-      if (data.success && data.new_count > 0) {
+      const newCount = Number(data.new_count || 0);
+
+      // 只有在未讀檔案數量「增加」時才提示，避免每次輪詢都重複跳 alert
+      if (data.success && newCount > 0 && newCount > lastNewFileCount) {
         // 例如用 alert 提示，或是加個 badge
-        alert(`你有 ${data.new_count} 個新檔案尚未讀取！`);
+        alert(`你有 ${newCount} 個新檔案尚未讀取！`);
       }
+
+      // 記錄最新計數，當使用者已讀/刪除後回落為 0，之後有新檔案仍可再次提示
+      lastNewFileCount = newCount;
     })
     .catch(err => console.error('checkNewFiles 錯誤：', err));
 }
+
+let lastNewFileCount = 0;
 
 // 每 10 秒檢查一次
 setInterval(checkNewFiles, 10000);
